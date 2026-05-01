@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+:root {
+  --neon-teal: #00f3ff;
+  --neon-orange: #ff5e00;
+  --dark-bg: #0b0c10;
+  --panel-bg: rgba(20, 22, 30, 0.7);
+}
+
+body {
+  margin: 0;
+  background-color: var(--dark-bg);
+  color: white;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden; /* For full screen 3D app */
+}
+
+/* Glassmorphism utilities */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Sheryians style glow */
+.neon-glow {
+  text-shadow: 0 0 10px var(--neon-teal), 0 0 20px var(--neon-teal);
+}
+
