@@ -13,3 +13,4 @@ Port 5173 is in use, trying another one...
 
   ➜  Local:   http://localhost:5174/SNOW-IR/
   ➜  Network: use --host to expose
+6:42:35 AM [vite] (client) page reload dist-netlify/index.html
