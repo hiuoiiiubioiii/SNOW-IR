@@ -8,3 +8,8 @@ Port 5173 is in use, trying another one...
 
   ➜  Local:   http://localhost:5174/
   ➜  Network: use --host to expose
+6:35:13 AM [vite] vite.config.ts changed, restarting server...
+6:35:13 AM [vite] server restarted.
+
+  ➜  Local:   http://localhost:5174/SNOW-IR/
+  ➜  Network: use --host to expose
