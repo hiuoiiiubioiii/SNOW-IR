@@ -25,27 +25,49 @@ const fragmentShader = `
   }
 
   void main() {
-    // Generate a synthetic NDSI (Normalized Difference Snow Index) value
-    // In production, this would be a texture sampled from the backend tile server
-    float noise = random(floor(vUv * 50.0)); // Pixelated look to simulate satellite resolution
+    // 1. Terrain & Topology (Elevation)
+    // We simulate elevation (DEM) based on the noise map.
+    float elevation = random(floor(vUv * 20.0)) + (vUv.y * 0.5); 
     
-    // Smooth out the noise slightly over time
-    float ndsi = noise + sin(uTime * 0.5 + vUv.x * 10.0) * 0.1;
+    // 2. Geospatial Sensing (Multispectral Bands)
+    // Simulating what the satellite "sees"
+    float visibleReflectance = random(floor(vUv * 50.0));
+    float swirReflectance = random(floor(vUv * 50.0 + vec2(100.0))); // Shortwave Infrared
+    
+    // Simulate cloud movement (The Anatomy of the Sky)
+    float cloudMask = smoothstep(0.4, 0.6, random(floor(vUv * 5.0 + vec2(uTime * 0.1))));
 
-    vec3 rockColor = vec3(0.3, 0.3, 0.35);      // Dark grey/brown
-    vec3 snowColor = vec3(0.0, 0.95, 1.0);      // Neon teal (Sheryians aesthetic for snow)
-    vec3 vegColor = vec3(0.1, 0.8, 0.3);        // Neon green
+    // 3. Earth Physics & Spectral Unmixing
+    // Both Snow and Clouds have HIGH visible reflectance.
+    // However, Snow absorbs SWIR (low SWIR), while Clouds reflect SWIR (high SWIR).
+    // NDSI = (Visible - SWIR) / (Visible + SWIR)
+    float ndsi = (visibleReflectance - swirReflectance) / (visibleReflectance + swirReflectance + 0.001);
+
+    vec3 rockColor = vec3(0.3, 0.3, 0.35);      // Dark grey/brown lithosphere
+    vec3 snowColor = vec3(0.0, 0.95, 1.0);      // Neon teal (Cryosphere)
+    vec3 vegColor = vec3(0.1, 0.8, 0.3);        // Neon green (Biosphere)
+    vec3 cloudColor = vec3(1.0, 1.0, 1.0);      // Pure white (Atmosphere)
     
     vec3 finalColor;
+    float alpha = 0.9;
     
     // MIXED PIXEL THRESHOLDING (The Core Solution)
-    // Instead of linear interpolation (blurring), we use hard step functions
-    if (ndsi > 0.6) {
+    // Resolving the ambiguity between Sky Pixels and Snow Pixels
+    
+    if (cloudMask > 0.5 && swirReflectance > 0.5) {
+        // High Visible + High SWIR = Cloud/Sky Pixel
+        finalColor = cloudColor;
+        alpha = 0.5; // Clouds are semi-transparent
+    } else if (ndsi > 0.3 && elevation > 0.4) {
+        // High NDSI + High Elevation Topology = Confirmed Snow Pixel
+        // Earth physics dictates snow cannot exist below certain topological elevations in summer
         finalColor = snowColor;
-    } else if (ndsi > 0.3) {
-        finalColor = rockColor;
-    } else {
+    } else if (elevation < 0.3) {
+        // Low elevation = Vegetation / Forest canopy
         finalColor = vegColor;
+    } else {
+        // Default exposed terrain
+        finalColor = rockColor;
     }
     
     // Add grid lines for "scanner" aesthetic
@@ -53,7 +75,7 @@ const fragmentShader = `
     float gridY = step(0.95, fract(vUv.y * 50.0));
     finalColor += vec3(gridX + gridY) * 0.2;
 
-    gl_FragColor = vec4(finalColor, 0.9);
+    gl_FragColor = vec4(finalColor, alpha);
   }
 `
 
